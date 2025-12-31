@@ -1,5 +1,5 @@
 /**
- * SERVICE WORKER - Offline Support & Push Notifications
+ * SERVICE WORKER - Offline Support & Push Notificationss
  * Handles caching, offline functionality, and background notifications
  */
 
