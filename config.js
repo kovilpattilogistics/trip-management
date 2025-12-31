@@ -6,7 +6,7 @@
 const CONFIG = {
     // YOUR GOOGLE APPS SCRIPT DEPLOYMENT URL
     // Replace with your actual deployment URL from Google Apps Script
-    API_URL: 'https://script.google.com/macros/s/AKfycbzzdkH3bzUwJwhcB85kRE_uLGeUNQgwftNaih4L48Pgqipr27Mv-XnOSt_JVNd7lek/exec',
+    API_URL: 'https://script.google.com/macros/s/AKfycbwKgHeH6LthK2g3962bMcg5RTcpiqc7Ik-UH4fxGr_EDj014uPpF7DDUmnMse5zQY8/exec',
     
     // App version for cache busting
     VERSION: '1.0.0',
