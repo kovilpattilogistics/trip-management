@@ -40,8 +40,8 @@ function initializeApp() {
 async function handleLoginSubmit(e) {
     e.preventDefault();
     
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    const email = document.getElementById('loginEmail')?.value?.trim() || '';
+    const password = document.getElementById('loginPassword')?.value || '';
 
     if (!email || !password) {
         showNotification('Please enter email and password', 'error');
@@ -129,6 +129,7 @@ async function loginUser(email, password) {
 
         return { success: false, error: 'Invalid email or password' };
     } catch (err) {
+        console.error('Login error:', err);
         return { success: false, error: err.message };
     }
 }
@@ -418,7 +419,7 @@ function renderTripsList(trips) {
                 <p><strong>From:</strong> ${trip.pickup_address}</p>
                 <p><strong>To:</strong> ${trip.drop_address}</p>
                 <p><strong>Status:</strong> <span class="status status--${trip.trip_status.toLowerCase()}">${trip.trip_status}</span></p>
-                <p><strong>Scheduled:</strong> ${new Date(trip.scheduled_pickup_time).toLocaleString()}</p>
+                <p><strong>Scheduled:</strong> ${trip.scheduled_pickup_time ? new Date(trip.scheduled_pickup_time).toLocaleString() : 'Not set'}</p>
                 ${trip.goods_details ? `<p><strong>Goods:</strong> ${trip.goods_details}</p>` : ''}
             </div>
         </div>
@@ -437,7 +438,7 @@ function renderDriverTripsList(trips) {
                 <p><strong>From:</strong> ${trip.pickup_address}</p>
                 <p><strong>To:</strong> ${trip.drop_address}</p>
                 <p><strong>Status:</strong> <span class="status status--${trip.trip_status.toLowerCase()}">${trip.trip_status}</span></p>
-                <p><strong>Pickup Time:</strong> ${new Date(trip.scheduled_pickup_time).toLocaleString()}</p>
+                <p><strong>Pickup Time:</strong> ${trip.scheduled_pickup_time ? new Date(trip.scheduled_pickup_time).toLocaleString() : 'Not set'}</p>
                 <div class="mt-8">
                     ${trip.trip_status === 'SCHEDULED' ? `
                         <button onclick="updateTripStatus('${trip.trip_id}', 'STARTED')" class="btn btn--primary btn--sm">Accept & Start</button>
@@ -515,14 +516,14 @@ async function registerServiceWorker() {
 // LOGGING
 // ============================================================================
 
-async function logUserAction(actionData) {
+async function logUserActionToSupabase(actionData) {
     try {
         const logEntry = {
             log_id: 'LOG_' + Date.now(),
             timestamp: new Date().toISOString(),
             ...actionData
         };
-        await logUserAction(logEntry);
+        await supabaseAPI('POST', 'logs', logEntry);
     } catch (err) {
         console.error('Logging error:', err);
     }
