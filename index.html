@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Trip Manager">
+    <meta name="theme-color" content="#2563eb">
+    
+    <title>Trip Management System</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%232563eb' width='180' height='180'/><text x='50%' y='50%' font-size='90' fill='white' text-anchor='middle' dy='.3em' font-weight='bold'>T</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        /* Safe area support for notch devices */
+        body {
+            padding-top: max(12px, env(safe-area-inset-top));
+            padding-left: max(12px, env(safe-area-inset-left));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
+        }
+
+        #app {
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Main Screens */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Login Screen */
+        #loginScreen {
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray-300);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:active {
+            background: var(--gray-200);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .user-info .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px;
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 16px;
+            gap: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            padding: 12px 16px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            white-space: nowrap;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .card-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-scheduled { background: #dbeafe; color: #1e40af; }
+        .badge-started { background: #fef3c7; color: #92400e; }
+        .badge-pickup-completed { background: #d1fae5; color: #065f46; }
+        .badge-in-transit { background: #fecaca; color: #7c2d12; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #f3e8ff; color: #6b21a8; }
+
+        /* Alert */
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #0c2d6b;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: flex-end;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            width: 100%;
+            border-radius: 12px 12px 0 0;
+            padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Trip Details */
+        .trip-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .trip-detail:last-child {
+            border-bottom: none;
+        }
+
+        .trip-detail-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .trip-detail-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        /* Map Button */
+        .map-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: #f0f9ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            color: var(--primary);
+            font-weight: 500;
+            cursor: pointer;
+            margin: 12px 0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .map-button:active {
+            background: #e0f2fe;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content {
+                padding: 12px;
+            }
+        }
+
+        /* Utility Classes */
+        .mt-8 { margin-top: 8px; }
+        .mt-12 { margin-top: 12px; }
+        .mb-8 { margin-bottom: 8px; }
+        .mb-12 { margin-bottom: 12px; }
+        .text-center { text-align: center; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .gap-8 { gap: 8px; }
+        .gap-12 { gap: 12px; }
+
+        /* Payment Input */
+        .payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .radio-option input:checked + label {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+
+        /* File Input */
+        .file-input-wrapper {
+            position: relative;
+            display: block;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-label {
+            display: block;
+            padding: 12px;
+            background: var(--gray-50);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .file-label:active {
+            border-color: var(--primary);
+            background: #f0f9ff;
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .notification-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .notification-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .header, .tabs, .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-container">
+                <div class="login-header">
+                    <h1>🚚 Trip Manager</h1>
+                    <p>Real-time Trip Management System</p>
+                </div>
+                <div id="loginError" class="alert alert-error hidden"></div>
+                <div class="form-group">
+                    <label for="loginEmail">Email or Phone</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com or 9876543210" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button class="btn btn-primary btn-full" id="loginBtn">Sign In</button>
+                <div class="mt-12 text-center" style="color: var(--text-secondary); font-size: 12px;">
+                    <p>Demo Credentials (Phase 1):</p>
+                    <p><strong>Admin:</strong> rajesh.admin@gmail.com / Admin@123</p>
+                    <p><strong>Driver:</strong> john.driver@gmail.com / Driver@123</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="mainScreen" class="screen">
+            <div class="header">
+                <h1 id="screenTitle">Dashboard</h1>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <div class="user-name" id="userName">User</div>
+                        <div id="userRole">Role</div>
+                    </div>
+                    <button class="logout-btn" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Admin Dashboard -->
+                <div id="adminDashboard" class="tab-content hidden">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="trips">All Trips</button>
+                        <button class="tab" data-tab="create">Create Trip</button>
+                        <button class="tab" data-tab="customers">Customers</button>
+                        <button class="tab" data-tab="reports">Reports</button>
+                    </div>
+
+                    <!-- Trips Tab -->
+                    <div id="tripsTab" class="tab-panel">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalTrips">0</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="activeTrips">0</div>
+                                <div class="stat-label">Active</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="completedTrips">0</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="pendingTrips">0</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                        </div>
+                        <div id="tripsList"></div>
+                    </div>
+
+                    <!-- Create Trip Tab -->
+                    <div id="createTab" class="tab-panel hidden">
+                        <div class="card">
+                            <h3 class="card-title">Create New Trip</h3>
+                            <div class="mt-12">
+                                <div class="form-group">
+                                    <label for="tripCustomer">Customer *</label>
+                                    <select id="tripCustomer" required>
+                                        <option value="">Select customer...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripPickup">Pickup Address *</label>
+                                    <input type="text" id="tripPickup" placeholder="Full pickup address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripDrop">Drop Address *</label>
+                                    <input type="text" id="tripDrop" placeholder="Full drop address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripPickupTime">Scheduled Pickup Time *</label>
+                                    <input type="datetime-local" id="tripPickupTime" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripDeliveryTime">Expected Delivery Time</label>
+                                    <input type="datetime-local" id="tripDeliveryTime">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripGoods">Goods Details</label>
+                                    <textarea id="tripGoods" placeholder="What goods are being transported?" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tripNotes">Notes</label>
+                                    <textarea id="tripNotes" placeholder="Any special instructions?" rows="2" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;"></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-full" id="createTripBtn">Create Trip</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customers Tab -->
+                    <div id="customersTab" class="tab-panel hidden">
+                        <button class="btn btn-primary btn-full mb-12" id="addCustomerBtn">Add New Customer</button>
+                        <div id="customersList"></div>
+                    </div>
+
+                    <!-- Reports Tab -->
+                    <div id="reportsTab" class="tab-panel hidden">
+                        <div class="card">
+                            <h3 class="card-title">Trip Reports</h3>
+                            <div class="mt-12">
+                                <div class="form-group">
+                                    <label for="reportStartDate">Start Date</label>
+                                    <input type="date" id="reportStartDate">
+                                </div>
+                                <div class="form-group">
+                                    <label for="reportEndDate">End Date</label>
+                                    <input type="date" id="reportEndDate">
+                                </div>
+                                <button class="btn btn-primary btn-full" id="generateReportBtn">Generate Report</button>
+                            </div>
+                            <div id="reportContent" class="mt-12"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Driver Dashboard -->
+                <div id="driverDashboard" class="tab-content hidden">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="available">Available Trips</button>
+                        <button class="tab" data-tab="active">Active Trip</button>
+                        <button class="tab" data-tab="request">Request Trip</button>
+                    </div>
+
+                    <!-- Available Trips Tab -->
+                    <div id="availableTab" class="tab-panel">
+                        <div id="availableTrips"></div>
+                    </div>
+
+                    <!-- Active Trip Tab -->
+                    <div id="activeTab" class="tab-panel hidden">
+                        <div id="activeTrip" class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>No active trip</p>
+                        </div>
+                    </div>
+
+                    <!-- Request Trip Tab -->
+                    <div id="requestTab" class="tab-panel hidden">
+                        <div class="card">
+                            <h3 class="card-title">Request Trip Approval</h3>
+                            <p class="card-subtitle">Create a trip without a predefined customer (needs admin approval)</p>
+                            <div class="mt-12">
+                                <div class="form-group">
+                                    <label for="reqPickup">Pickup Address *</label>
+                                    <input type="text" id="reqPickup" placeholder="Full pickup address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reqDrop">Drop Address *</label>
+                                    <input type="text" id="reqDrop" placeholder="Full drop address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reqPickupTime">Scheduled Pickup Time *</label>
+                                    <input type="datetime-local" id="reqPickupTime" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="reqDeliveryTime">Expected Delivery Time</label>
+                                    <input type="datetime-local" id="reqDeliveryTime">
+                                </div>
+                                <div class="form-group">
+                                    <label for="reqGoods">Goods Details</label>
+                                    <textarea id="reqGoods" placeholder="What goods?" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;"></textarea>
+                                </div>
+                                <button class="btn btn-primary btn-full" id="requestApprovalBtn">Request Approval</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Details Modal -->
+        <div id="tripModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Trip Details</h2>
+                    <button class="close-btn" id="closeModalBtn">&times;</button>
+                </div>
+                <div id="tripModalContent"></div>
+            </div>
+        </div>
+
+        <!-- Add Customer Modal -->
+        <div id="customerModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Customer</h2>
+                    <button class="close-btn" id="closeCustomerModalBtn">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label for="newCustomerName">Customer Name *</label>
+                    <input type="text" id="newCustomerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="newCustomerPhone">Phone Number</label>
+                    <input type="tel" id="newCustomerPhone">
+                </div>
+                <div class="form-group">
+                    <label for="newCustomerCity">City *</label>
+                    <input type="text" id="newCustomerCity" required>
+                </div>
+                <div class="form-group">
+                    <label for="newCustomerArea">Area</label>
+                    <input type="text" id="newCustomerArea">
+                </div>
+                <button class="btn btn-primary btn-full" id="saveCustomerBtn">Add Customer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Register Service Worker for offline support and notifications
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').catch(err => {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+    </script>
+</body>
+</html>
