@@ -19,106 +19,66 @@ let appState = {
     requestQueue: []
 };
 
-// ============================================================================
-// API CALLS WITH OFFLINE SUPPORT
-// ============================================================================
-
 async function apiCall(action, params = {}) {
-    const payload = {
-        action: action,
-        params: params
-    };
-
-    try {
-        const response = await fetch(CONFIG.API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        const data = await response.json();
-        
-        if (data.error) {
-            showNotification(data.error, 'error');
-            return null;
-        }
-
-        return data;
-    } catch (error) {
-        console.error('API Error:', error);
-        
-        if (!appState.isOnline) {
-            showNotification('You are offline. Please check your internet connection.', 'error');
-            // Queue request for later
-            appState.requestQueue.push({ action, params, timestamp: Date.now() });
-        } else {
-            showNotification('Network error. Please try again.', 'error');
-        }
-        
-        return null;
+  try {
+    // Handle login separately
+    if (action === 'login') {
+      return await loginSupabase(params.email, params.password);
     }
+    
+    // ... rest of your functions use Supabase similarly
+    throw new Error('Unknown action');
+  } catch (error) {
+    console.error('API Error:', error);
+    showNotification(error.message, 'error');
+    return { error: error.message, success: false };
+  }
 }
 
-// ============================================================================
-// AUTHENTICATION
-// ============================================================================
-
-async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-
-    if (!email || !password) {
-        showAlert('loginError', 'Email and password are required', 'error');
-        return;
+async function loginSupabase(email, password) {
+  try {
+    // Check Admins
+    const admins = await callSupabase('admins', 'GET', null, `?admin_email=eq.${email}`);
+    
+    if (admins.length > 0) {
+      const admin = admins[0];
+      if (admin.password === password) {
+        return {
+          success: true,
+          token: 'token_' + Date.now(),
+          userId: admin.admin_id,
+          userName: admin.admin_name,
+          userRole: 'admin',
+          userEmail: admin.admin_email,
+          department: admin.department
+        };
+      }
     }
 
-    const response = await apiCall('login', { email, password });
-    if (!response) return;
-
-    if (response.error) {
-        showAlert('loginError', response.error, 'error');
-        return;
+    // Check Drivers
+    const drivers = await callSupabase('drivers', 'GET', null, `?driver_email=eq.${email}`);
+    
+    if (drivers.length > 0) {
+      const driver = drivers[0];
+      if (driver.password === password) {
+        return {
+          success: true,
+          token: 'token_' + Date.now(),
+          userId: driver.driver_id,
+          userName: driver.driver_name,
+          userRole: 'driver',
+          userEmail: driver.driver_email,
+          userPhone: driver.driver_phone
+        };
+      }
     }
 
-    // Save login info
-    appState.user = response.userName;
-    appState.token = response.token;
-    appState.role = response.userRole;
-    appState.userId = response.userId;
-    appState.userEmail = response.userEmail;
-
-    // Store in localStorage
-    localStorage.setItem('user', JSON.stringify({
-        name: response.userName,
-        token: response.token,
-        role: response.userRole,
-        userId: response.userId,
-        email: response.userEmail
-    }));
-
-    showScreen('mainScreen');
-    loadDashboard();
+    return { error: 'Invalid email or password', success: false };
+  } catch (err) {
+    return { error: err.message, success: false };
+  }
 }
 
-function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        appState.user = null;
-        appState.token = null;
-        appState.role = null;
-        localStorage.removeItem('user');
-        
-        // Clear form
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        document.getElementById('loginError').classList.add('hidden');
-        
-        showScreen('loginScreen');
-    }
-}
 
 // ============================================================================
 // SCREEN NAVIGATION
