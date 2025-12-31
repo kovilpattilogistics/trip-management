@@ -1,49 +1,53 @@
 /**
  * TRIP MANAGEMENT SYSTEM - CONFIGURATION
- * Update the API_URL with your Google Apps Script deployment URL
+ * Using Supabase Backend (NO CORS ISSUES)
  */
 
 const CONFIG = {
-    // YOUR GOOGLE APPS SCRIPT DEPLOYMENT URL
-    // Replace with your actual deployment URL from Google Apps Script
-    API_URL: 'https://script.google.com/macros/s/AKfycbyIQ5458Mn6SYg2XTIyCAdcuTbA3CO4rtd0Fd7ipVeIZ5Z5joRcsaIDRQW174Mpg9qoAw/exec',
+    // Supabase Configuration
+    SUPABASE_URL: 'https://dbqemexpynmbpikybbqd.supabase.co',  // Replace with your URL
+    SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRicWVtZXhweW5tYnBpa3liYnFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNzYwNDYsImV4cCI6MjA4Mjc1MjA0Nn0.dGinSLwVoG1gk8QXZ8wrEbt80FILJqoT8KSvkj5o7lk',                    // Replace with your anon key
     
-    // App version for cache busting
+    // App Settings
     VERSION: '1.0.0',
+    API_TIMEOUT: 30000,
     
-    // Features
     FEATURES: {
         OFFLINE_SUPPORT: true,
         PUSH_NOTIFICATIONS: true,
         GPS_TRACKING: true
     },
     
-    // API timeout (ms)
-    API_TIMEOUT: 30000,
-    
-    // Retry settings
     RETRY: {
         MAX_ATTEMPTS: 3,
         DELAY: 1000
     }
 };
 
-/**
- * HOW TO SETUP:
- * 
- * 1. Create Google Sheet named "TripManagementDB"
- * 2. Create sheets: Drivers, Admins, Customers, Trips, Payments, Logs
- * 3. Open Extensions > Apps Script
- * 4. Copy the gas-script.js code into the editor
- * 5. Click Deploy > New Deployment
- *    - Type: Web app
- *    - Execute as: Your account
- *    - Who has access: Anyone
- * 6. Copy the deployment URL
- * 7. Replace 'YOUR_SCRIPT_ID' above with the actual ID from the URL
- *    URL format: https://script.google.com/macros/d/SCRIPT_ID/usercallable
- * 
- * Demo Credentials:
- * Admin: rajesh.admin@gmail.com / Admin@123
- * Driver: john.driver@gmail.com / Driver@123
- */
+// Supabase API Helper
+async function callSupabase(table, method, data = null, filter = null) {
+    const headers = {
+        'apikey': CONFIG.SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+    };
+
+    let url = `${CONFIG.SUPABASE_URL}/rest/v1/${table}`;
+    let options = { headers };
+
+    if (method === 'GET') {
+        if (filter) url += filter;
+        options.method = 'GET';
+    } else if (method === 'POST') {
+        options.method = 'POST';
+        options.body = JSON.stringify(data);
+    } else if (method === 'PATCH') {
+        if (filter) url += filter;
+        options.method = 'PATCH';
+        options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(url, options);
+    const result = await response.json();
+    return result;
+}
