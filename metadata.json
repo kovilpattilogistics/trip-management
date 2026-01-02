@@ -1,8 +1,0 @@
-{
-  "name": "EcoExpress Logistics",
-  "description": "Sustainable logistics management system for efficient trip scheduling and tracking.",
-  "requestFramePermissions": [
-    "camera",
-    "geolocation"
-  ]
-}
